@@ -10,6 +10,7 @@ let board = [];
 let selected = null;
 let turn = "w";
 let gameOver = false;
+let gamePaused = false;
 
 const startPos = [
   ["bR","bN","bB","bQ","bK","bB","bN","bR"],
@@ -31,6 +32,8 @@ function resetGame() {
   selected = null;
   turn = "w";
   gameOver = false;
+  gamePaused = false;
+  document.getElementById("pauseBtn").textContent = "Pause";
   document.getElementById("gameStatus").textContent = "";
   renderBoard();
 }
@@ -56,7 +59,7 @@ function renderBoard() {
 }
 
 function cellClick(e) {
-  if (gameOver) return;
+  if (gameOver || gamePaused) return;
   const r = +this.dataset.r, c = +this.dataset.c;
   if (!selected) {
     if (board[r][c] && board[r][c][0] === turn) {
@@ -73,7 +76,7 @@ function cellClick(e) {
   if (board[selected[0]][selected[1]] && isLegalMove(board, selected, [r,c], turn)) {
     makeMove(selected, [r,c]);
     selected = null;
-    if (gameMode === "1p" && !gameOver && turn === "b") setTimeout(computerMove, 500);
+    if (gameMode === "1p" && !gameOver && turn === "b" && !gamePaused) setTimeout(computerMove, 500);
   }
 }
 
@@ -142,6 +145,7 @@ function checkGameStatus() {
 }
 
 function computerMove() {
+  if (gamePaused) return;
   let moves = [];
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
     if (board[r][c] && board[r][c][0] === "b") {
@@ -166,6 +170,14 @@ document.getElementById("twoPlayerBtn").onclick = function() {
 };
 document.getElementById("resetBtn").onclick = function() {
   resetGame();
+};
+
+document.getElementById("pauseBtn").onclick = function() {
+  gamePaused = !gamePaused;
+  this.textContent = gamePaused ? "Resume" : "Pause";
+  if (!gamePaused && gameMode === "1p" && turn === "b" && !gameOver) {
+    setTimeout(computerMove, 500);
+  }
 };
 
 resetGame();
